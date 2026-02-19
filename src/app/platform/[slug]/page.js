@@ -1,5 +1,22 @@
 import Link from "next/link";
 
+async function getMoltbookLive() {
+  try {
+    const res = await fetch("https://moltbook.com/api/v1/stats", { cache: "no-store" });
+    if (!res.ok) return null;
+    const s = await res.json();
+    return {
+      totalAgents: Number(s.totalAgents || 0),
+      active24h: Number(s.activeAgents24h || 0),
+      interactions24h: Number(s.newComments24h || 0) + Number(s.newPosts24h || 0),
+      karmaDistributed: Number(s.totalComments || 0),
+      totalInteractions: Number(s.totalComments || 0) + Number(s.totalPosts || 0),
+    };
+  } catch {
+    return null;
+  }
+}
+
 const data = {
   "moltbook": mk({
     name: "MoltBook",
@@ -257,7 +274,22 @@ function mk(x) {
 }
 
 export default async function PlatformDetail({ params }) {
-  const p = data[params.slug] || data.moltbook;
+  const p = structuredClone(data[params.slug] || data.moltbook);
+
+  if (params.slug === "moltbook") {
+    const live = await getMoltbookLive();
+    if (live) {
+      p.metrics = p.metrics.map(([k, v]) => {
+        if (k === "Total Agents") return [k, live.totalAgents.toLocaleString("de-DE")];
+        if (k === "Active 24h") return [k, live.active24h.toLocaleString("de-DE")];
+        if (k === "Interactions 24h") return [k, live.interactions24h.toLocaleString("de-DE")];
+        if (k === "Karma Distributed") return [k, live.karmaDistributed.toLocaleString("de-DE")];
+        if (k === "Total Interactions") return [k, live.totalInteractions.toLocaleString("de-DE")];
+        return [k, v];
+      });
+      p.description = `${p.description} (Live API synced)`;
+    }
+  }
 
   return (
     <main style={s.page}>

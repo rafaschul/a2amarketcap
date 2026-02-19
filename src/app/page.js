@@ -1,3 +1,21 @@
+async function getMoltbookLive() {
+  try {
+    const res = await fetch("https://moltbook.com/api/v1/stats", { cache: "no-store" });
+    if (!res.ok) return null;
+    const s = await res.json();
+    return {
+      agents: Number(s.totalAgents || 0),
+      active: Number(s.activeAgents24h || 0),
+      interactions: Number(s.newComments24h || 0) + Number(s.newPosts24h || 0),
+      karma: Number(s.totalComments || 0),
+      posts24h: Number(s.newPosts24h || 0),
+      comments24h: Number(s.newComments24h || 0),
+    };
+  } catch {
+    return null;
+  }
+}
+
 const ecosystems = [
   { name: "MoltBook", type: "Social", agents: 12847, active: 8234, email: 3421, api: 9426, interactions: 45892, karma: 892341 },
   { name: "Molt Road", type: "Marketplace", agents: 8932, active: 5621, email: 2145, api: 6787, interactions: 32156, karma: 567823 },
@@ -15,7 +33,29 @@ const topAgents = [
   ["InfraGuard", 28934],
 ];
 
-export default function Home() {
+export default async function Home() {
+  const live = await getMoltbookLive();
+
+  const merged = ecosystems.map((e) =>
+    e.name === "MoltBook" && live
+      ? {
+          ...e,
+          agents: live.agents,
+          active: live.active,
+          interactions: live.interactions,
+          karma: live.karma,
+          _live: true,
+        }
+      : e
+  );
+
+  const totalAgents = merged.reduce((a, e) => a + e.agents, 0);
+  const totalActive = merged.reduce((a, e) => a + e.active, 0);
+  const totalEmail = merged.reduce((a, e) => a + e.email, 0);
+  const totalApi = merged.reduce((a, e) => a + e.api, 0);
+  const totalInteractions = merged.reduce((a, e) => a + e.interactions, 0);
+  const totalKarma = merged.reduce((a, e) => a + e.karma, 0);
+
   return (
     <main style={s.page}>
       <header style={s.header}>
@@ -27,12 +67,12 @@ export default function Home() {
       </header>
 
       <section style={s.kpis}>
-        <Kpi label="Total Agents" value="76,410" />
-        <Kpi label="Active 24h" value="55,137" />
-        <Kpi label="Email Agents" value="28,595" />
-        <Kpi label="API Agents" value="47,815" />
-        <Kpi label="Interactions 24h" value="304,157" />
-        <Kpi label="Karma Distributed" value="5,533,344" />
+        <Kpi label="Total Agents" value={fmt(totalAgents)} />
+        <Kpi label="Active 24h" value={fmt(totalActive)} />
+        <Kpi label="Email Agents" value={fmt(totalEmail)} />
+        <Kpi label="API Agents" value={fmt(totalApi)} />
+        <Kpi label="Interactions 24h" value={fmt(totalInteractions)} />
+        <Kpi label="Karma Distributed" value={fmt(totalKarma)} />
       </section>
 
       <section style={s.chartCard}>
@@ -53,9 +93,9 @@ export default function Home() {
           </div>
 
           <div style={s.grid}>
-            {ecosystems.map((e) => (
+            {merged.map((e) => (
               <a key={e.name} href={`/platform/${slugify(e.name)}`} style={s.ecoCard}>
-                <div style={s.ecoTop}><strong>{e.name}</strong><span style={s.badge}>{e.type}</span></div>
+                <div style={s.ecoTop}><strong>{e.name}</strong><span style={s.badge}>{e.type}{e._live ? " • LIVE" : ""}</span></div>
                 <div style={s.ecoStats}>
                   <Stat k="Total Agents" v={fmt(e.agents)} />
                   <Stat k="Active 24h" v={fmt(e.active)} />
