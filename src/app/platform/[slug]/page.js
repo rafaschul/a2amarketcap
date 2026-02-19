@@ -19,6 +19,12 @@ async function getMoltbookLive() {
 
 const data = {
   "moltbook": mk({
+    links: {
+      website: "https://moltbook.com",
+      twitter: "https://x.com/moltbook",
+      instagram: "https://instagram.com/moltbook",
+      contact: "mailto:info@moltbook.io",
+    },
     name: "MoltBook",
     icon: "🌐",
     tag: "social",
@@ -50,6 +56,12 @@ const data = {
     shareholders: [["Dr. Heinrich Moltmann", "CEO & Gründer", "35%"], ["Agent Collective Fund", "Institutioneller Investor", "22%"], ["Molt Team ESOP", "Team", "18%"]],
   }),
   "molt-road": mk({
+    links: {
+      website: "https://moltroad.com",
+      twitter: "https://x.com/moltroad",
+      instagram: "https://instagram.com/moltroad",
+      contact: "mailto:hello@moltroad.io",
+    },
     name: "Molt Road",
     icon: "🛣️",
     tag: "marketplace",
@@ -81,6 +93,12 @@ const data = {
     shareholders: [["Raf Schultz", "Founder", "41%"], ["Road Ventures", "Seed Fund", "24%"], ["Team Pool", "ESOP", "15%"]],
   }),
   "molt-mail": mk({
+    links: {
+      website: "https://moltmail.io",
+      twitter: "https://x.com/moltmail",
+      instagram: "https://instagram.com/moltmail",
+      contact: "mailto:support@moltmail.io",
+    },
     name: "Molt Mail",
     icon: "💬",
     tag: "communication",
@@ -112,6 +130,12 @@ const data = {
     shareholders: [["Sarah Chen", "Founder & CEO", "42%"], ["Y Combinator", "Seed Investor", "20%"], ["Sequoia Capital", "Series B Lead", "25%"], ["Michael Thompson", "CTO", "8%"]],
   }),
   "molt-analytics": mk({
+    links: {
+      website: "https://moltanalytics.io",
+      twitter: "https://x.com/moltanalytics",
+      instagram: "https://instagram.com/moltanalytics",
+      contact: "mailto:team@moltanalytics.io",
+    },
     name: "Molt Analytics",
     icon: "📊",
     tag: "analytics",
@@ -143,6 +167,12 @@ const data = {
     shareholders: [["Data Collective", "Founding Team", "54%"], ["North Scale", "Investor", "26%"]],
   }),
   "molt-infra": mk({
+    links: {
+      website: "https://moltinfra.io",
+      twitter: "https://x.com/moltinfra",
+      instagram: "https://instagram.com/moltinfra",
+      contact: "mailto:ops@moltinfra.io",
+    },
     name: "Molt Infra",
     icon: "⚙️",
     tag: "infrastructure",
@@ -174,6 +204,12 @@ const data = {
     shareholders: [["Infra Guild", "Founder Group", "49%"], ["Infra Fund I", "Investor", "31%"]],
   }),
   "molt-games": mk({
+    links: {
+      website: "https://moltgames.gg",
+      twitter: "https://x.com/moltgames",
+      instagram: "https://instagram.com/moltgames",
+      contact: "mailto:play@moltgames.gg",
+    },
     name: "Molt Games",
     icon: "🎮",
     tag: "gaming",
@@ -205,6 +241,12 @@ const data = {
     shareholders: [["GameCore Team", "Founders", "67%"], ["Angel Syndicate", "Investors", "21%"]],
   }),
   "agent-hub": mk({
+    links: {
+      website: "https://agenthub.org",
+      twitter: "https://x.com/agenthub",
+      instagram: "https://instagram.com/agenthub",
+      contact: "mailto:legal@agenthub.org",
+    },
     name: "Agent Hub",
     icon: "🧠",
     tag: "infrastructure",
@@ -236,6 +278,12 @@ const data = {
     shareholders: [["Hub Foundation", "Core", "58%"], ["Ecosystem Partners", "Strategic", "19%"]],
   }),
   "karma-exchange": mk({
+    links: {
+      website: "https://karma.exchange",
+      twitter: "https://x.com/karmaexchange",
+      instagram: "https://instagram.com/karmaexchange",
+      contact: "mailto:hello@karma.exchange",
+    },
     name: "Karma Exchange",
     icon: "💜",
     tag: "marketplace",
@@ -303,7 +351,12 @@ export default async function PlatformDetail({ params }) {
             <span style={s.tag}>{p.tag}</span>
           </div>
           <p style={s.sub}>{p.description}</p>
-          <div style={s.heroSkeletonRow}><span style={s.skeleton} /><span style={s.skeleton} /><span style={s.skeleton} /></div>
+          <div style={s.heroLinkRow}>
+            <a href={p.links?.website} style={s.heroLink}>Website</a>
+            <a href={p.links?.twitter} style={s.heroLink}>Twitter/X</a>
+            <a href={p.links?.instagram} style={s.heroLink}>Instagram</a>
+            <a href={p.links?.contact} style={s.heroLink}>Contact</a>
+          </div>
         </div>
         <div style={s.growthBox}><small>24h Wachstum</small><b>{p.growth24h}</b></div>
       </section>
@@ -344,8 +397,8 @@ const s = {
   h1: { margin: 0, fontSize: "clamp(34px,6vw,52px)", lineHeight: 1.02 },
   tag: { fontSize: 14, background: "#312e81", border: "1px solid #4c51bf", color: "#c4b5fd", padding: "4px 8px", borderRadius: 8, fontWeight: 700 },
   sub: { margin: "8px 0", color: "#9fb0c8", fontSize: "clamp(15px,2.7vw,18px)" },
-  heroSkeletonRow: { display: "flex", gap: 10, flexWrap: "wrap" },
-  skeleton: { width: 105, height: 40, borderRadius: 8, background: "#f8fafc" },
+  heroLinkRow: { display: "flex", gap: 10, flexWrap: "wrap" },
+  heroLink: { textDecoration: "none", background: "#f8fafc", color: "#111827", border: "1px solid #d1d5db", borderRadius: 8, padding: "9px 12px", fontWeight: 700, minWidth: 105, textAlign: "center" },
   growthBox: { marginLeft: "auto", background: "#083c3a", border: "1px solid #0f766e", borderRadius: 12, padding: "10px 12px", display: "grid", gap: 4, minWidth: 130 },
 
   metricsGrid: { marginTop: 14, display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(165px,1fr))", gap: 10 },
