@@ -12,11 +12,7 @@ const snapshot = {
     controlledSharePct: 78,
     freeSharePct: 22,
   },
-  growth12m: {
-    bear: 0.55,
-    base: 1.05,
-    bull: 1.9,
-  },
+  growth12m: { bear: 0.55, base: 1.05, bull: 1.9 },
 };
 
 const segments = [
@@ -28,8 +24,8 @@ const segments = [
     statusToday: {
       participants: 930,
       growth3m: '+28%',
-      controlled: '82%',
-      free: '18%',
+      controlled: 82,
+      free: 18,
       strongestUseCases: 'Ops automation, treasury execution, assisted trading, payment workflows',
     },
     marketPotential12m: {
@@ -48,8 +44,8 @@ const segments = [
     statusToday: {
       participants: 310,
       growth3m: '+46%',
-      controlled: '66%',
-      free: '34%',
+      controlled: 66,
+      free: 34,
       strongestUseCases: 'Autonomous micro-commerce, agent swarms, market-making experiments, API-native treasuries',
     },
     marketPotential12m: {
@@ -137,51 +133,31 @@ export default function Home() {
   return (
     <main style={styles.page}>
       <header style={styles.header}>
-        <h1 style={{ margin: 0 }}>A2A MarketCap Dashboard</h1>
+        <h1 style={{ margin: 0, fontSize: 36 }}>A2A MarketCap Dashboard</h1>
         <p style={styles.sub}>How agents make money: market split, growth potential, and ROI streams.</p>
         <p style={styles.dim}>Snapshot: {snapshot.asOf} • {snapshot.note}</p>
       </header>
 
       <section style={styles.kpiRow}>
-        <Kpi label="Tracked Participants" value={fmt(snapshot.participantsToday.totalTracked)} />
-        <Kpi label="Human-Controlled" value={fmt(snapshot.participantsToday.humanControlled)} />
-        <Kpi label="Agent-Native" value={fmt(snapshot.participantsToday.agentNative)} />
-        <Kpi label="Controlled Share" value={`${snapshot.participantsToday.controlledSharePct}%`} />
-        <Kpi label="Free Share" value={`${snapshot.participantsToday.freeSharePct}%`} />
+        <Kpi label="Tracked Participants" value={fmt(snapshot.participantsToday.totalTracked)} accent="#60a5fa" />
+        <Kpi label="Human-Controlled" value={fmt(snapshot.participantsToday.humanControlled)} accent="#22d3ee" />
+        <Kpi label="Agent-Native" value={fmt(snapshot.participantsToday.agentNative)} accent="#a78bfa" />
+        <Kpi label="Controlled Share" value={`${snapshot.participantsToday.controlledSharePct}%`} accent="#34d399" />
+        <Kpi label="Free Share" value={`${snapshot.participantsToday.freeSharePct}%`} accent="#f472b6" />
       </section>
 
-      <section style={styles.card}>
+      <section style={styles.cardGlow}>
         <h2 style={styles.h2}>12-Month Growth Scenarios</h2>
-        <ul style={styles.list}>
-          <li>Bear: <b>{pct(snapshot.growth12m.bear)}</b> participant growth</li>
-          <li>Base: <b>{pct(snapshot.growth12m.base)}</b> participant growth</li>
-          <li>Bull: <b>{pct(snapshot.growth12m.bull)}</b> participant growth</li>
-        </ul>
+        <div style={styles.scenarioRow}>
+          <ScenarioPill name="Bear" value={pct(snapshot.growth12m.bear)} color="#fda4af" />
+          <ScenarioPill name="Base" value={pct(snapshot.growth12m.base)} color="#93c5fd" />
+          <ScenarioPill name="Bull" value={pct(snapshot.growth12m.bull)} color="#86efac" />
+        </div>
       </section>
 
       <section style={styles.grid2}>
-        {segments.map((seg) => (
-          <article key={seg.id} style={styles.card}>
-            <h2 style={styles.h2}>{seg.title}</h2>
-            <p style={styles.p}>{seg.definition}</p>
-            <h3 style={styles.h3}>Status Today</h3>
-            <ul style={styles.list}>
-              <li>Participants: <b>{fmt(seg.statusToday.participants)}</b></li>
-              <li>3-month growth: <b>{seg.statusToday.growth3m}</b></li>
-              <li>Controlled: <b>{seg.statusToday.controlled}</b></li>
-              <li>Free: <b>{seg.statusToday.free}</b></li>
-              <li>Strongest use cases: {seg.statusToday.strongestUseCases}</li>
-            </ul>
-            <h3 style={styles.h3}>Market Potential (12m)</h3>
-            <ul style={styles.list}>
-              <li>TAM estimate: {seg.marketPotential12m.tam}</li>
-              <li>Base growth: <b>{seg.marketPotential12m.baseGrowth}</b></li>
-              <li>Key driver: {seg.marketPotential12m.keyDriver}</li>
-              <li>Main risk: {seg.marketPotential12m.risk}</li>
-            </ul>
-            <h3 style={styles.h3}>Sales Channels</h3>
-            <div style={styles.tags}>{seg.salesChannels.map((c) => <span style={styles.tag} key={c}>{c}</span>)}</div>
-          </article>
+        {segments.map((seg, idx) => (
+          <SegmentBox key={seg.id} seg={seg} tone={idx === 0 ? 'cyan' : 'violet'} />
         ))}
       </section>
 
@@ -261,13 +237,84 @@ export default function Home() {
   );
 }
 
-function Kpi({ label, value }) {
+function SegmentBox({ seg, tone }) {
+  const controlled = Number(seg.statusToday.controlled || 0);
+  const free = Number(seg.statusToday.free || 0);
+  const hybrid = Math.max(0, 100 - controlled - free);
+  const bar = tone === 'cyan'
+    ? ['#06b6d4', '#22c55e', '#f472b6']
+    : ['#8b5cf6', '#34d399', '#f97316'];
+
   return (
-    <div style={styles.kpi}>
+    <article style={{ ...styles.card, ...(tone === 'cyan' ? styles.cardCyan : styles.cardViolet) }}>
+      <h2 style={styles.h2}>{seg.title}</h2>
+      <p style={styles.p}>{seg.definition}</p>
+
+      <div style={styles.innerKpiRow}>
+        <MiniKpi label="Participants" value={fmt(seg.statusToday.participants)} />
+        <MiniKpi label="3M Growth" value={seg.statusToday.growth3m} />
+      </div>
+
+      <div style={styles.segmentBarWrap}>
+        <div style={styles.segmentLegend}>Status Mix</div>
+        <div style={styles.segmentBar}>
+          <div style={{ ...styles.segmentPart, width: `${controlled}%`, background: bar[0] }} />
+          <div style={{ ...styles.segmentPart, width: `${hybrid}%`, background: bar[1] }} />
+          <div style={{ ...styles.segmentPart, width: `${free}%`, background: bar[2] }} />
+        </div>
+        <div style={styles.legendRow}>
+          <LegendDot color={bar[0]} text={`Controlled ${controlled}%`} />
+          <LegendDot color={bar[1]} text={`Hybrid ${hybrid}%`} />
+          <LegendDot color={bar[2]} text={`Free ${free}%`} />
+        </div>
+      </div>
+
+      <h3 style={styles.h3}>Market Potential (12m)</h3>
+      <ul style={styles.list}>
+        <li>TAM estimate: {seg.marketPotential12m.tam}</li>
+        <li>Base growth: <b>{seg.marketPotential12m.baseGrowth}</b></li>
+        <li>Key driver: {seg.marketPotential12m.keyDriver}</li>
+        <li>Main risk: {seg.marketPotential12m.risk}</li>
+        <li>Strongest use cases: {seg.statusToday.strongestUseCases}</li>
+      </ul>
+
+      <h3 style={styles.h3}>Sales Channels</h3>
+      <div style={styles.tags}>{seg.salesChannels.map((c) => <span style={styles.tag} key={c}>{c}</span>)}</div>
+    </article>
+  );
+}
+
+function Kpi({ label, value, accent }) {
+  return (
+    <div style={{ ...styles.kpi, borderColor: `${accent}66` }}>
+      <div style={{ ...styles.kpiAccent, background: accent }} />
       <div style={styles.kpiValue}>{value}</div>
       <div style={styles.kpiLabel}>{label}</div>
     </div>
   );
+}
+
+function MiniKpi({ label, value }) {
+  return (
+    <div style={styles.miniKpi}>
+      <div style={styles.miniKpiLabel}>{label}</div>
+      <div style={styles.miniKpiValue}>{value}</div>
+    </div>
+  );
+}
+
+function ScenarioPill({ name, value, color }) {
+  return (
+    <div style={{ ...styles.pill, borderColor: `${color}88` }}>
+      <span style={{ ...styles.pillDot, background: color }} />
+      <span style={styles.pillName}>{name}</span>
+      <strong style={styles.pillVal}>{value}</strong>
+    </div>
+  );
+}
+
+function LegendDot({ color, text }) {
+  return <span style={styles.legend}><i style={{ ...styles.dot, background: color }} />{text}</span>;
 }
 
 function Th({ children }) { return <th style={styles.th}>{children}</th>; }
@@ -286,7 +333,7 @@ function scaleReturns(base100, factor) {
 
 const styles = {
   page: {
-    maxWidth: 1300,
+    maxWidth: 1320,
     margin: '0 auto',
     padding: '20px 16px 56px',
     fontFamily: 'Inter, system-ui, sans-serif',
@@ -295,34 +342,33 @@ const styles = {
     minHeight: '100vh',
   },
   header: {
-    background: 'linear-gradient(180deg,#0f1733,#0a132b)',
-    border: '1px solid #2b3a58',
-    borderRadius: 14,
-    padding: 16,
+    background: 'linear-gradient(135deg,#111b3f,#0a132b)',
+    border: '1px solid #3b4e76',
+    boxShadow: '0 10px 30px rgba(2,8,23,.35)',
+    borderRadius: 16,
+    padding: 18,
     marginBottom: 14,
   },
-  sub: { margin: '8px 0 4px', color: '#cbd5e1' },
+  sub: { margin: '8px 0 4px', color: '#cbd5e1', fontSize: 16 },
   dim: { margin: 0, color: '#93a2bc', fontSize: 13 },
   kpiRow: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit,minmax(170px,1fr))',
+    gridTemplateColumns: 'repeat(auto-fit,minmax(185px,1fr))',
     gap: 10,
     marginBottom: 14,
   },
   kpi: {
-    background: 'linear-gradient(180deg,#11183a,#0b132a)',
-    border: '1px solid #2b3a58',
-    borderRadius: 12,
-    padding: 12,
+    position: 'relative',
+    background: 'linear-gradient(180deg,#141f48,#0c1734)',
+    border: '1px solid #2f4066',
+    borderRadius: 14,
+    padding: '14px 12px',
+    overflow: 'hidden',
   },
-  kpiValue: { fontSize: 26, fontWeight: 900 },
-  kpiLabel: { fontSize: 12, color: '#93a2bc' },
-  grid2: {
-    display: 'grid',
-    gap: 12,
-    gridTemplateColumns: 'repeat(auto-fit,minmax(340px,1fr))',
-    marginBottom: 14,
-  },
+  kpiAccent: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
+  kpiValue: { fontSize: 36, lineHeight: 1.1, fontWeight: 900, letterSpacing: '.3px' },
+  kpiLabel: { marginTop: 4, fontSize: 12, color: '#93a2bc', fontWeight: 700 },
+
   card: {
     background: '#0b132a',
     border: '1px solid #22314e',
@@ -330,10 +376,56 @@ const styles = {
     padding: 14,
     marginBottom: 14,
   },
-  h2: { margin: '0 0 8px', fontSize: 20 },
+  cardGlow: {
+    background: 'linear-gradient(180deg,#0b132a,#0b1430)',
+    border: '1px solid #2a3c61',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 14,
+  },
+  cardCyan: {
+    background: 'linear-gradient(180deg,#0a1831,#0b162a)',
+    border: '1px solid #1f5f70',
+  },
+  cardViolet: {
+    background: 'linear-gradient(180deg,#151238,#0f132a)',
+    border: '1px solid #4a3d7d',
+  },
+
+  h2: { margin: '0 0 8px', fontSize: 22 },
   h3: { margin: '10px 0 8px', fontSize: 15, color: '#cbd5e1' },
   p: { margin: '0 0 8px', color: '#cbd5e1' },
   list: { margin: 0, paddingLeft: 18, color: '#d6deea', display: 'grid', gap: 6 },
+
+  scenarioRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
+  pill: {
+    display: 'inline-flex', alignItems: 'center', gap: 8,
+    padding: '8px 12px', borderRadius: 999,
+    background: '#101a36', border: '1px solid #334155',
+  },
+  pillDot: { width: 8, height: 8, borderRadius: 99, display: 'inline-block' },
+  pillName: { color: '#cbd5e1', fontSize: 13 },
+  pillVal: { fontSize: 14 },
+
+  grid2: {
+    display: 'grid',
+    gap: 12,
+    gridTemplateColumns: 'repeat(auto-fit,minmax(380px,1fr))',
+    marginBottom: 14,
+  },
+  innerKpiRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: '10px 0 8px' },
+  miniKpi: { background: '#121e3f', border: '1px solid #2b3e67', borderRadius: 12, padding: '10px 12px' },
+  miniKpiLabel: { fontSize: 11, color: '#9fb1cf', fontWeight: 700 },
+  miniKpiValue: { marginTop: 4, fontSize: 28, fontWeight: 900 },
+
+  segmentBarWrap: { marginTop: 8, marginBottom: 8 },
+  segmentLegend: { fontSize: 12, color: '#9fb1cf', marginBottom: 6, fontWeight: 700 },
+  segmentBar: { height: 14, background: '#0f172a', border: '1px solid #243754', borderRadius: 999, overflow: 'hidden', display: 'flex' },
+  segmentPart: { height: '100%' },
+  legendRow: { display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 8 },
+  legend: { fontSize: 12, color: '#bfd0ea', display: 'inline-flex', alignItems: 'center', gap: 6 },
+  dot: { width: 8, height: 8, borderRadius: 99, display: 'inline-block' },
+
   tags: { display: 'flex', flexWrap: 'wrap', gap: 8 },
   tag: {
     background: '#1e293b',
@@ -343,11 +435,13 @@ const styles = {
     fontSize: 12,
     padding: '5px 9px',
   },
+
   toolbar: { display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
   toolbarGroup: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
   controlLabel: { fontSize: 12, color: '#93a2bc', fontWeight: 700 },
   btn: { background: '#0b132a', border: '1px solid #22314e', color: '#93a2bc', padding: '6px 10px', borderRadius: 999, fontWeight: 700, cursor: 'pointer' },
   btnActive: { background: '#6d28d9', border: '1px solid #8b5cf6', color: '#fff', padding: '6px 10px', borderRadius: 999, fontWeight: 700, cursor: 'pointer' },
+
   tableWrap: { overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: {
