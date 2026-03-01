@@ -1,3 +1,7 @@
+'use client';
+
+import { useMemo, useState } from 'react';
+
 const snapshot = {
   asOf: '2026-03-01',
   note: 'High-level strategic estimate for A2A finance landscape. Replace with live pipelines over time.',
@@ -64,12 +68,7 @@ const incomeStreams = [
     segment: 'Human-Controlled',
     marketPotential: 'High (near-term)',
     channel: 'Outbound + partner intros',
-    investPer100: '€100',
-    expectedReturn: {
-      downside: '€120',
-      base: '€260',
-      upside: '€520',
-    },
+    expectedReturnPer100: { downside: 120, base: 260, upside: 520 },
     example:
       'Example: one SMB onboarding package (€1,500) closes after €550 cumulative acquisition cost over outreach/content cycles.',
   },
@@ -78,40 +77,23 @@ const incomeStreams = [
     segment: 'Both',
     marketPotential: 'High (repeatable)',
     channel: 'Content-led inbound + newsletter + communities',
-    investPer100: '€100',
-    expectedReturn: {
-      downside: '€90',
-      base: '€220',
-      upside: '€410',
-    },
-    example:
-      'Example: weekly premium brief at €99/mo; 12 retained subscribers from a €600 launch sprint.',
+    expectedReturnPer100: { downside: 90, base: 220, upside: 410 },
+    example: 'Example: weekly premium brief at €99/mo; 12 retained subscribers from a €600 launch sprint.',
   },
   {
     name: 'Referral Brokerage (tools/infrastructure)',
     segment: 'Both',
     marketPotential: 'Medium-High',
     channel: 'Warm intros + ecosystem mapping',
-    investPer100: '€100',
-    expectedReturn: {
-      downside: '€70',
-      base: '€180',
-      upside: '€600',
-    },
-    example:
-      'Example: 15 qualified partner intros/month with 12-20% revshare on converted accounts.',
+    expectedReturnPer100: { downside: 70, base: 180, upside: 600 },
+    example: 'Example: 15 qualified partner intros/month with 12-20% revshare on converted accounts.',
   },
   {
     name: 'Managed Agent Ops Retainer',
     segment: 'Human-Controlled',
     marketPotential: 'Very High (high-ticket)',
     channel: 'Founder network + case-study led sales',
-    investPer100: '€100',
-    expectedReturn: {
-      downside: '€140',
-      base: '€320',
-      upside: '€780',
-    },
+    expectedReturnPer100: { downside: 140, base: 320, upside: 780 },
     example:
       'Example: €3k monthly retainer for policy + execution monitoring, acquired through two workshops + one pilot.',
   },
@@ -120,14 +102,8 @@ const incomeStreams = [
     segment: 'Agent-Native',
     marketPotential: 'Medium (emerging)',
     channel: 'Protocol ecosystem + builder cohorts',
-    investPer100: '€100',
-    expectedReturn: {
-      downside: '€60',
-      base: '€170',
-      upside: '€550',
-    },
-    example:
-      'Example: paid design sprint (€2k) for non-human treasury model and risk architecture.',
+    expectedReturnPer100: { downside: 60, base: 170, upside: 550 },
+    example: 'Example: paid design sprint (€2k) for non-human treasury model and risk architecture.',
   },
 ];
 
@@ -150,6 +126,14 @@ const statusBands = [
 ];
 
 export default function Home() {
+  const [roiBase, setRoiBase] = useState(1000);
+  const [segmentFilter, setSegmentFilter] = useState('All');
+
+  const filteredIncomeStreams = useMemo(() => {
+    if (segmentFilter === 'All') return incomeStreams;
+    return incomeStreams.filter((x) => x.segment === segmentFilter || x.segment === 'Both');
+  }, [segmentFilter]);
+
   return (
     <main style={styles.page}>
       <header style={styles.header}>
@@ -226,7 +210,21 @@ export default function Home() {
       </section>
 
       <section style={styles.card}>
-        <h2 style={styles.h2}>Income Streams (ROI per €100 invested)</h2>
+        <div style={styles.toolbar}>
+          <h2 style={{ ...styles.h2, margin: 0 }}>Income Streams (ROI)</h2>
+          <div style={styles.toolbarGroup}>
+            <span style={styles.controlLabel}>ROI Basis:</span>
+            <button style={roiBase === 100 ? styles.btnActive : styles.btn} onClick={() => setRoiBase(100)}>€100</button>
+            <button style={roiBase === 1000 ? styles.btnActive : styles.btn} onClick={() => setRoiBase(1000)}>€1.000</button>
+          </div>
+          <div style={styles.toolbarGroup}>
+            <span style={styles.controlLabel}>Segment:</span>
+            {['All', 'Human-Controlled', 'Agent-Native'].map((f) => (
+              <button key={f} style={segmentFilter === f ? styles.btnActive : styles.btn} onClick={() => setSegmentFilter(f)}>{f}</button>
+            ))}
+          </div>
+        </div>
+
         <div style={styles.tableWrap}>
           <table style={styles.table}>
             <thead>
@@ -235,21 +233,24 @@ export default function Home() {
                 <Th>Segment</Th>
                 <Th>Market Potential</Th>
                 <Th>Sales Channel</Th>
-                <Th>Return per €100 (Down/Base/Up)</Th>
+                <Th>Return per {eur(roiBase)} (Down/Base/Up)</Th>
                 <Th>Concrete Example</Th>
               </tr>
             </thead>
             <tbody>
-              {incomeStreams.map((r) => (
-                <tr key={r.name}>
-                  <Td><b>{r.name}</b></Td>
-                  <Td>{r.segment}</Td>
-                  <Td>{r.marketPotential}</Td>
-                  <Td>{r.channel}</Td>
-                  <Td>{r.expectedReturn.downside} / {r.expectedReturn.base} / {r.expectedReturn.upside}</Td>
-                  <Td>{r.example}</Td>
-                </tr>
-              ))}
+              {filteredIncomeStreams.map((r) => {
+                const scaled = scaleReturns(r.expectedReturnPer100, roiBase / 100);
+                return (
+                  <tr key={r.name}>
+                    <Td><b>{r.name}</b></Td>
+                    <Td>{r.segment}</Td>
+                    <Td>{r.marketPotential}</Td>
+                    <Td>{r.channel}</Td>
+                    <Td>{eur(scaled.downside)} / {eur(scaled.base)} / {eur(scaled.upside)}</Td>
+                    <Td>{r.example}</Td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -274,6 +275,14 @@ function Td({ children }) { return <td style={styles.td}>{children}</td>; }
 
 function fmt(n) { return Number(n).toLocaleString('de-DE'); }
 function pct(x) { return `${Math.round(x * 100)}%`; }
+function eur(n) { return `€${Math.round(n).toLocaleString('de-DE')}`; }
+function scaleReturns(base100, factor) {
+  return {
+    downside: base100.downside * factor,
+    base: base100.base * factor,
+    upside: base100.upside * factor,
+  };
+}
 
 const styles = {
   page: {
@@ -334,6 +343,11 @@ const styles = {
     fontSize: 12,
     padding: '5px 9px',
   },
+  toolbar: { display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 },
+  toolbarGroup: { display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' },
+  controlLabel: { fontSize: 12, color: '#93a2bc', fontWeight: 700 },
+  btn: { background: '#0b132a', border: '1px solid #22314e', color: '#93a2bc', padding: '6px 10px', borderRadius: 999, fontWeight: 700, cursor: 'pointer' },
+  btnActive: { background: '#6d28d9', border: '1px solid #8b5cf6', color: '#fff', padding: '6px 10px', borderRadius: 999, fontWeight: 700, cursor: 'pointer' },
   tableWrap: { overflowX: 'auto' },
   table: { width: '100%', borderCollapse: 'collapse' },
   th: {
