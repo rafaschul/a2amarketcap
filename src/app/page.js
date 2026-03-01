@@ -161,27 +161,16 @@ export default function Home() {
         ))}
       </section>
 
-      <section style={styles.card}>
+      <section style={styles.cardGlow}>
         <h2 style={styles.h2}>Status Model (Clear Separation)</h2>
-        <div style={styles.tableWrap}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <Th>Status</Th>
-                <Th>Meaning</Th>
-                <Th>Why it matters</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {statusBands.map((r) => (
-                <tr key={r.name}>
-                  <Td><b>{r.name}</b></Td>
-                  <Td>{r.meaning}</Td>
-                  <Td>{r.whyItMatters}</Td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div style={styles.statusCardGrid}>
+          {statusBands.map((r) => (
+            <div key={r.name} style={styles.statusCard}>
+              <div style={styles.statusTitle}>{r.name}</div>
+              <div style={styles.statusMeaning}>{r.meaning}</div>
+              <div style={styles.statusImpact}>{r.whyItMatters}</div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -244,15 +233,24 @@ function SegmentBox({ seg, tone }) {
   const bar = tone === 'cyan'
     ? ['#06b6d4', '#22c55e', '#f472b6']
     : ['#8b5cf6', '#34d399', '#f97316'];
+  const donut = `conic-gradient(${bar[0]} 0 ${controlled}%, ${bar[1]} ${controlled}% ${controlled + hybrid}%, ${bar[2]} ${controlled + hybrid}% 100%)`;
 
   return (
     <article style={{ ...styles.card, ...(tone === 'cyan' ? styles.cardCyan : styles.cardViolet) }}>
       <h2 style={styles.h2}>{seg.title}</h2>
       <p style={styles.p}>{seg.definition}</p>
 
-      <div style={styles.innerKpiRow}>
-        <MiniKpi label="Participants" value={fmt(seg.statusToday.participants)} />
-        <MiniKpi label="3M Growth" value={seg.statusToday.growth3m} />
+      <div style={styles.segmentTopGrid}>
+        <div style={styles.innerKpiRow}>
+          <MiniKpi label="Participants" value={fmt(seg.statusToday.participants)} />
+          <MiniKpi label="3M Growth" value={seg.statusToday.growth3m} />
+        </div>
+        <div style={styles.donutWrap}>
+          <div style={{ ...styles.donut, background: donut }}>
+            <div style={styles.donutInner}>{controlled}%</div>
+          </div>
+          <div style={styles.donutLabel}>Controlled Core</div>
+        </div>
       </div>
 
       <div style={styles.segmentBarWrap}>
@@ -396,6 +394,16 @@ const styles = {
   h3: { margin: '10px 0 8px', fontSize: 15, color: '#cbd5e1' },
   p: { margin: '0 0 8px', color: '#cbd5e1' },
   list: { margin: 0, paddingLeft: 18, color: '#d6deea', display: 'grid', gap: 6 },
+  statusCardGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 10 },
+  statusCard: {
+    background: 'linear-gradient(180deg,#121d3f,#0d1733)',
+    border: '1px solid #30476f',
+    borderRadius: 12,
+    padding: 12,
+  },
+  statusTitle: { fontSize: 16, fontWeight: 900, marginBottom: 6 },
+  statusMeaning: { fontSize: 13, color: '#d6deea', marginBottom: 8, lineHeight: 1.4 },
+  statusImpact: { fontSize: 12, color: '#93c5fd', fontWeight: 700 },
 
   scenarioRow: { display: 'flex', gap: 10, flexWrap: 'wrap' },
   pill: {
@@ -413,7 +421,28 @@ const styles = {
     gridTemplateColumns: 'repeat(auto-fit,minmax(380px,1fr))',
     marginBottom: 14,
   },
+  segmentTopGrid: { display: 'grid', gridTemplateColumns: '1.6fr .9fr', gap: 10, alignItems: 'center' },
   innerKpiRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, margin: '10px 0 8px' },
+  donutWrap: { display: 'grid', justifyItems: 'center', gap: 6 },
+  donut: {
+    width: 114,
+    height: 114,
+    borderRadius: '50%',
+    padding: 10,
+    boxShadow: 'inset 0 0 0 1px #22314e, 0 8px 16px rgba(2,8,23,.35)',
+  },
+  donutInner: {
+    width: '100%',
+    height: '100%',
+    borderRadius: '50%',
+    background: '#0b132a',
+    display: 'grid',
+    placeItems: 'center',
+    fontWeight: 900,
+    fontSize: 22,
+    color: '#e2e8f0',
+  },
+  donutLabel: { fontSize: 11, color: '#9fb1cf', fontWeight: 700 },
   miniKpi: { background: '#121e3f', border: '1px solid #2b3e67', borderRadius: 12, padding: '10px 12px' },
   miniKpiLabel: { fontSize: 11, color: '#9fb1cf', fontWeight: 700 },
   miniKpiValue: { marginTop: 4, fontSize: 28, fontWeight: 900 },
